@@ -16,15 +16,16 @@
 <body class="bg-slate-900 text-slate-200 min-h-screen flex items-center justify-center p-4">
 
     <!-- Container -->
-    <div id="app-container" class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 fade-in">
+    <div id="app-container" class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 fade-in transition-all duration-500 ease-in-out">
         
         <!-- Header -->
-        <div class="text-center mb-8">
+        <div id="main-header" class="text-center mb-8">
             <h1 class="text-3xl font-bold text-white mb-2">System Portal</h1>
             <p id="subtitle" class="text-slate-400 text-sm">Please log in to continue</p>
             
             <!-- Security Warning for GitHub Pages -->
             <div class="mt-4 p-3 bg-amber-900/30 border border-amber-500/50 rounded-lg text-xs text-amber-300 text-left">
+                <strong>Notice:</strong> This application is currently running purely on the frontend (GitHub Pages). Passwords are hardcoded in the script for prototyping purposes.
             </div>
         </div>
 
@@ -63,20 +64,82 @@
         </div>
 
         <!-- View 3: Dashboard (Logged In & Subscribed) -->
-        <div id="dashboard-view" class="hidden text-center space-y-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div id="dashboard-view" class="hidden w-full">
+            <!-- Navbar / Tabs -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-700 pb-4 mb-6 gap-4">
+                <div class="flex space-x-4 sm:space-x-6 overflow-x-auto w-full sm:w-auto">
+                    <button class="text-blue-400 border-b-2 border-blue-400 pb-1 font-medium whitespace-nowrap">Home Overview</button>
+                    <button class="text-slate-400 hover:text-slate-200 transition pb-1 font-medium whitespace-nowrap">Purchases</button>
+                    <button class="text-slate-400 hover:text-slate-200 transition pb-1 font-medium whitespace-nowrap">Payments</button>
+                    <button class="text-slate-400 hover:text-slate-200 transition pb-1 font-medium whitespace-nowrap">Vendors</button>
+                </div>
+                <button onclick="logout()" class="text-sm bg-slate-700 hover:bg-red-600/80 hover:text-white px-4 py-2 rounded-lg transition border border-slate-600 whitespace-nowrap">
+                    Log Out
+                </button>
             </div>
-            <div>
-                <h2 class="text-2xl font-bold text-white">Welcome, Admin</h2>
-                <p class="text-emerald-400 text-sm mt-1 font-medium">Active Subscription: Valid for 365 days</p>
+
+            <!-- Dashboard Controls -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">App Overview</h2>
+                    <p class="text-slate-400 text-sm mt-1">Track your total work process</p>
+                </div>
+                <select id="time-filter" onchange="updateDashboard()" class="bg-slate-900 border border-slate-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer">
+                    <option value="year">This Year</option>
+                    <option value="month">This Month</option>
+                    <option value="date">Today</option>
+                </select>
             </div>
-            <div class="bg-slate-700/50 rounded-lg p-4 text-left border border-slate-600">
-                <p class="text-sm text-slate-300">Your mock secure daily content goes here.</p>
+
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card 1 -->
+                <div class="bg-slate-700/30 rounded-xl p-5 border border-slate-600/50 shadow-inner">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-sm text-slate-400 font-medium">Total Purchase</p>
+                        <div class="p-1.5 bg-blue-500/20 rounded-md text-blue-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                    </div>
+                    <h3 id="tot-purchase" class="text-3xl font-bold text-white mb-1">$0</h3>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-slate-700/30 rounded-xl p-5 border border-slate-600/50 shadow-inner">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-sm text-slate-400 font-medium">Total Payment</p>
+                        <div class="p-1.5 bg-emerald-500/20 rounded-md text-emerald-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <h3 id="tot-payment" class="text-3xl font-bold text-emerald-400 mb-1">$0</h3>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-slate-700/30 rounded-xl p-5 border border-slate-600/50 shadow-inner">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-sm text-slate-400 font-medium">Top Vendor</p>
+                        <div class="p-1.5 bg-amber-500/20 rounded-md text-amber-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                        </div>
+                    </div>
+                    <h3 id="top-vendor" class="text-xl font-bold text-amber-400 truncate">-</h3>
+                    <p id="top-vendor-amt" class="text-xs text-slate-400 mt-1">-</p>
+                </div>
             </div>
-            <button onclick="logout()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition border border-slate-600">
-                Log Out
-            </button>
+            
+            <!-- Cash Flow Visual -->
+            <div class="bg-slate-700/20 rounded-xl p-6 border border-slate-600/50">
+                <h3 class="text-sm font-semibold text-white mb-4">Cash Flow Balance (Purchases vs Payments)</h3>
+                <div class="w-full bg-slate-800 rounded-full h-3 mb-2 overflow-hidden flex shadow-inner">
+                    <div id="bar-purchase" class="bg-blue-500 h-3 transition-all duration-500" style="width: 50%"></div>
+                    <div id="bar-payment" class="bg-emerald-500 h-3 transition-all duration-500" style="width: 50%"></div>
+                </div>
+                <div class="flex justify-between text-xs font-medium">
+                    <span class="text-blue-400 flex items-center"><span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>Purchase</span>
+                    <span class="text-emerald-400 flex items-center">Payment<span class="w-2 h-2 rounded-full bg-emerald-500 ml-2"></span></span>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -103,12 +166,23 @@
             subscription: document.getElementById('sub-error')
         };
         const subtitle = document.getElementById('subtitle');
+        const mainHeader = document.getElementById('main-header');
+        const appContainer = document.getElementById('app-container');
 
         // Helper to switch views smoothly
         function showView(viewName, subtitleText) {
             Object.values(views).forEach(v => v.classList.add('hidden'));
             views[viewName].classList.remove('hidden');
-            subtitle.innerText = subtitleText;
+            
+            if (viewName === 'dashboard') {
+                mainHeader.classList.add('hidden'); // Hide the login header
+                appContainer.classList.replace('max-w-md', 'max-w-4xl'); // Expand container for dashboard layout
+                updateDashboard(); // Load the default data into the UI
+            } else {
+                mainHeader.classList.remove('hidden'); // Show login header
+                appContainer.classList.replace('max-w-4xl', 'max-w-md'); // Shrink container for login
+                subtitle.innerText = subtitleText;
+            }
             
             // Add a small animation effect
             views[viewName].classList.remove('fade-in');
@@ -158,6 +232,49 @@
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             showView('login', 'Please log in to continue');
+        }
+
+        // --- DASHBOARD LOGIC ---
+        // Mock data to simulate the backend database
+        const mockDashboardData = {
+            date: { purchase: 12500, payment: 8200, vendor: "TechCorp Ltd.", vendorAmt: 4500 },
+            month: { purchase: 345000, payment: 290000, vendor: "Global Supplies Co.", vendorAmt: 125000 },
+            year: { purchase: 4200000, payment: 3850000, vendor: "MegaWorks Inc.", vendorAmt: 1500000 }
+        };
+
+        const currencyFormatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0
+        });
+
+        // Function to update the UI based on dropdown selection
+        function updateDashboard() {
+            const filter = document.getElementById('time-filter').value;
+            const data = mockDashboardData[filter];
+            
+            // Animate text updates using fade
+            const elements = ['tot-purchase', 'tot-payment', 'top-vendor', 'top-vendor-amt'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                el.style.opacity = 0;
+                setTimeout(() => {
+                    if (id === 'tot-purchase') el.innerText = currencyFormatter.format(data.purchase);
+                    if (id === 'tot-payment') el.innerText = currencyFormatter.format(data.payment);
+                    if (id === 'top-vendor') el.innerText = data.vendor;
+                    if (id === 'top-vendor-amt') el.innerText = currencyFormatter.format(data.vendorAmt) + " Total Volume";
+                    el.style.opacity = 1;
+                    el.style.transition = "opacity 0.3s ease";
+                }, 150);
+            });
+            
+            // Update simple progress bar chart
+            const total = data.purchase + data.payment;
+            const purchasePct = total > 0 ? (data.purchase / total) * 100 : 50;
+            const paymentPct = total > 0 ? (data.payment / total) * 100 : 50;
+            
+            document.getElementById('bar-purchase').style.width = purchasePct + '%';
+            document.getElementById('bar-payment').style.width = paymentPct + '%';
         }
 
         // Add Enter key support for inputs
