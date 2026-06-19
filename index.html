@@ -1,1 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Access Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen flex items-center justify-center p-4">
 
+    <!-- Container -->
+    <div id="app-container" class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 fade-in">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">System Portal</h1>
+            <p id="subtitle" class="text-slate-400 text-sm">Please log in to continue</p>
+            
+            <!-- Security Warning for GitHub Pages -->
+            <div class="mt-4 p-3 bg-amber-900/30 border border-amber-500/50 rounded-lg text-xs text-amber-300 text-left">
+                <strong>Notice:</strong> This application is currently running purely on the frontend (GitHub Pages). Passwords are hardcoded in the script for prototyping purposes.
+            </div>
+        </div>
+
+        <!-- View 1: Daily Login Form -->
+        <div id="login-view" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Username</label>
+                <input type="text" id="username" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Enter username">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Password</label>
+                <input type="password" id="password" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Enter password">
+            </div>
+            <button onclick="handleLogin()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-lg shadow-blue-500/30">
+                Log In
+            </button>
+            <p id="login-error" class="text-red-400 text-sm text-center hidden">Invalid username or password.</p>
+        </div>
+
+        <!-- View 2: Subscription Master Password -->
+        <div id="subscription-view" class="space-y-4 hidden">
+            <div class="text-center mb-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 mb-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-white">Subscription Required</h2>
+                <p class="text-sm text-slate-400 mt-1">Enter the Master Key to activate your 1-year access.</p>
+            </div>
+            <div>
+                <input type="password" id="master-password" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none transition" placeholder="Yearly Master Password">
+            </div>
+            <button onclick="handleSubscription()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition shadow-lg shadow-amber-500/30">
+                Activate Subscription
+            </button>
+            <p id="sub-error" class="text-red-400 text-sm text-center hidden">Incorrect Master Password.</p>
+        </div>
+
+        <!-- View 3: Dashboard (Logged In & Subscribed) -->
+        <div id="dashboard-view" class="hidden text-center space-y-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-white">Welcome, Admin</h2>
+                <p class="text-emerald-400 text-sm mt-1 font-medium">Active Subscription: Valid for 365 days</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-4 text-left border border-slate-600">
+                <p class="text-sm text-slate-300">Your mock secure daily content goes here.</p>
+            </div>
+            <button onclick="logout()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition border border-slate-600">
+                Log Out
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- INSECURE FRONTEND CONFIGURATION ---
+        // Using hardcoded variables for GitHub Pages compatibility.
+        const DAILY_USER = "Admin";
+        const DAILY_PASS = "Admin";
+        const MASTER_PASS = "Rajesh4568@123"; 
+        
+        // In-memory state for this session
+        let isLoggedIn = false;
+        let hasActiveSubscription = false;
+
+        // DOM Elements
+        const views = {
+            login: document.getElementById('login-view'),
+            subscription: document.getElementById('subscription-view'),
+            dashboard: document.getElementById('dashboard-view')
+        };
+        const errors = {
+            login: document.getElementById('login-error'),
+            subscription: document.getElementById('sub-error')
+        };
+        const subtitle = document.getElementById('subtitle');
+
+        // Helper to switch views smoothly
+        function showView(viewName, subtitleText) {
+            Object.values(views).forEach(v => v.classList.add('hidden'));
+            views[viewName].classList.remove('hidden');
+            subtitle.innerText = subtitleText;
+            
+            // Add a small animation effect
+            views[viewName].classList.remove('fade-in');
+            void views[viewName].offsetWidth; // trigger reflow
+            views[viewName].classList.add('fade-in');
+        }
+
+        // 1. Handle Daily Login
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === DAILY_USER && pass === DAILY_PASS) {
+                isLoggedIn = true;
+                errors.login.classList.add('hidden');
+                
+                // Check subscription status after successful login
+                if (hasActiveSubscription) {
+                    showView('dashboard', 'Secure Dashboard');
+                } else {
+                    showView('subscription', 'Account Authorization');
+                }
+            } else {
+                errors.login.classList.remove('hidden');
+            }
+        }
+
+        // 2. Handle Master Password for Subscription
+        function handleSubscription() {
+            const masterPassInput = document.getElementById('master-password').value;
+
+            if (masterPassInput === MASTER_PASS) {
+                hasActiveSubscription = true;
+                errors.subscription.classList.add('hidden');
+                
+                showView('dashboard', 'Secure Dashboard');
+            } else {
+                errors.subscription.classList.remove('hidden');
+            }
+        }
+
+        // 3. Logout
+        function logout() {
+            isLoggedIn = false;
+            // Note: We are keeping 'hasActiveSubscription' true for this browser session.
+            // If they refresh the page, everything resets.
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showView('login', 'Please log in to continue');
+        }
+
+        // Add Enter key support for inputs
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLogin();
+        });
+        document.getElementById('master-password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleSubscription();
+        });
+    </script>
+</body>
+</html>
